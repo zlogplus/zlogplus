@@ -21,24 +21,24 @@ fre=fre16[19:21]+fre16[17:19] #ここはMHz 必要な部分を取り出してMHz
 #print部
 #mode 数字によってmodeがわかるのでそれを示す
 if mode==00 or mode==01:
-  print("SSB")
+    print("SSB")
 if mode==02:
-  print("AM")
+    print("AM")
 if mode==03:
-  print("CW")
+    print("CW")
 if mode==04:
-  print("RTTY")
+    print("RTTY")
 if mode=05:
-  print("FM")
+    print("FM")
 else:
-  print("other")
+    print("other")
 
 #周波数 バンドを示すために幅で検索
 if fre>140 and fre<150:
-  print("144MHz")
+    print("144MHz")
 if fre>430 and fre<435:
-  print("430MHz")
+    print("430MHz")
 if fre>1200 and fre<1300:
-  print("1.2GHz")
+    print("1.2GHz")
 else:
-  print("not amatuer band")
+    print("not amatuer band")

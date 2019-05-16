@@ -16,32 +16,32 @@ modeFM=FEFE'受信アドレス''送信アドレス'010501FD
 
 #そのaのモードに合わせてic9700に送るコード
 if a=="SSB":
-  ser = serial.Serial('送信先',9600,timeout=None)#送信先、bps、タイムアウト時間を決める
-  ser.write("modeUSB")#送る
-  ser.close()#閉じる
+    ser = serial.Serial('送信先',9600,timeout=None)#送信先、bps、タイムアウト時間を決める
+    ser.write("modeUSB")#送る
+    ser.close()#閉じる
 
 if a=="AM":
-  ser = serial.Serial('送信先',9600,timeout=None)
-  ser.write("modeAM")
-  ser.close()
+    ser = serial.Serial('送信先',9600,timeout=None)
+    ser.write("modeAM")
+    ser.close()
 
 if a=="CW":
-  ser = serial.Serial('送信先',9600,timeout=None)
-  ser.write("modeCW")
-  ser.close()
+    ser = serial.Serial('送信先',9600,timeout=None)
+    ser.write("modeCW")
+    ser.close()
 
 if a=="RTTY":
-  ser = serial.Serial('送信先',9600,timeout=None)
-  ser.write("modeRTTY")
-  ser.close()
+    ser = serial.Serial('送信先',9600,timeout=None)
+    ser.write("modeRTTY")
+    ser.close()
 
 if a=="FM":
-  ser = serial.Serial('送信先',9600,timeout=None)
-  ser.write("modeFM")
-  ser.close()
+    ser = serial.Serial('送信先',9600,timeout=None)
+    ser.write("modeFM")
+    ser.close()
 
 else:
-  print("error")
+    print("error")
 
 #周波数変更のための16進数（モード、周波数によって違う）
 b144fm=FEFE'受信アドレス''送信アドレス'000000004501FD
@@ -118,4 +118,4 @@ if b==12g and a=="RTTY":
     ser.close()
 
 else:
-  print("error")
+    print("error")
