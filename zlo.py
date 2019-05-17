@@ -44,6 +44,26 @@ class ZlogData():
         self.output_num = chunk[0x5E] \
                 if type(chunk[0x5E]) == int \
                 else int.from_bytes(chunk[0x5E], 'big')
+        # マルチ: char型, 0x5F-0x9C
+        # chunk[0x5F]に文字数あり
+        self.multi_count = chunk[0x5F]
+        self.multi = chunk[0x60:0x60+chunk[0x5F]].decode()
+        # Newマルチ int型, 0x9D
+        self.newmulti_num = chunk[0x9D] \
+                if type(chunk[0x9D]) == int \
+                else int.from_bytes(chunk[0x9D], 'big')
+        # 得点 int型, 0x9F
+        self.point = chunk[0x9F] \
+                if type(chunk[0x9F]) == int \
+                else int.from_bytes(chunk[0x9F], 'big')
+        # オペレータ char型, 0xA0-0xAE
+        # chunk[0xA0]に文字数あり
+        self.op_count = chunk[0xA0]
+        self.op = chunk[0xA1:0xA1+chunk[0xA0]].decode('sjis')
+        # メモ char型, 0xAF-0xF1
+        # chunk[0xAF]に文字数あり
+        self.memo_count = chunk[0xAF]
+        self.memo = chunk[0xB0:0xB0+2*chunk[0xAF]].decode('sjis')
 
     def time(self):
         # bytesをdouble型に変換
@@ -71,12 +91,19 @@ class ZlogData():
                 if self.band_num < len(band) else 'Unknown'
 
     def output(self):
-        # モードは1バイトで表される
-        # 0:CW, 1:SSB, 2:FM, 3:AM, 4:RTTY, 5:Others
+        # 出力は1バイトで表される
+        # 0:P, 1:L, 2:M, 3:H
         output = ['P', 'L', 'M', 'H']
         return output[self.output_num] \
                 if self.output_num < len(output) else 'Unknown'
     
+    def newmulti(self):
+        # 出力は1バイトで表される
+        # 0:DUPLICATE, 1:NEW
+        newmulti = ['DUPLICATE', 'NEW']
+        return newmulti[self.newmulti_num] \
+                if self.newmulti_num < len(newmulti) else 'Unknown'
+
     def data_all(self):
         return {
                 'time': self.time(), 
@@ -90,7 +117,14 @@ class ZlogData():
                 'rx_rst': self.rx_rst,
                 'mode': self.mode(),
                 'band': self.band(),
-                'output': self.output()
+                'output': self.output(),
+                'multi': self.multi,
+                'newmulti': self.newmulti(),
+                'point': self.point,
+                'op_count': self.op_count,
+                'op': self.op,
+                'memo_count': self.memo_count,
+                'memo': self.memo
                 }
 
 def read_zlog(filename):
