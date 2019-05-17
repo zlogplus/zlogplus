@@ -63,7 +63,7 @@ class ZlogData():
         # メモ char型, 0xAF-0xF1
         # chunk[0xAF]に文字数あり
         self.memo_count = chunk[0xAF]
-        self.memo = chunk[0xB0:0xB0+2*chunk[0xAF]].decode('sjis')
+        memo_tmp = chunk[0xB0:0xF2]
 
     def time(self):
         # bytesをdouble型に変換
@@ -104,6 +104,14 @@ class ZlogData():
         return newmulti[self.newmulti_num] \
                 if self.newmulti_num < len(newmulti) else 'Unknown'
 
+    def memo(self):
+        # self.memo_countは文字数であってバイト数ではないので、
+        # データがNULにならない範囲で切り取る
+        it = 0xB0
+        while self.all[it] != 0:
+            it += 1
+        return self.all[0xB0:it].decode('sjis')
+
     def data_all(self):
         return {
                 'time': self.time(), 
@@ -124,7 +132,7 @@ class ZlogData():
                 'op_count': self.op_count,
                 'op': self.op,
                 'memo_count': self.memo_count,
-                'memo': self.memo
+                'memo': self.memo()
                 }
 
 def read_zlog(filename):
