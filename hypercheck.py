@@ -23,7 +23,7 @@ def hypercheck(query):
 			hams.append([callsign, place])
 	hams = sorted(list(map(list, set(map(tuple, hams)))))
 	# コンテストナンバーをjcc.datから取得
-	jccfile = open("jcc.dat", 'r')
+	jccfile = open("acag.dat", 'r')
 	jcclist = csv.reader(jccfile, delimiter = '\t')
 	for jcc in jcclist:
 		for i in range(len(hams)):

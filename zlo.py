@@ -16,8 +16,8 @@ class ZlogData():
         self.time_hex = chunk[0x00:0x08][::-1]
         # コールサイン: char型, 0x08-0x14
         # chunk[0x08]に文字数あり
-        self.cs_count = chunk[0x08]
-        self.cs = chunk[0x09:0x09+chunk[0x08]].decode()
+        self.callsign_count = chunk[0x08]
+        self.callsign = chunk[0x09:0x09+chunk[0x08]].decode()
         # 送信ナンバー: char型, 0x15-0x33
         # chunk[0x15]に文字数あり
         self.tx_num_count = chunk[0x15]
@@ -28,10 +28,10 @@ class ZlogData():
         self.rx_num = chunk[0x35:0x35+chunk[0x34]].decode()
         # 送信RST: int型, 0x54-0x55
         # 上位は2バイト目のため反転処理
-        self.tx_rst = int.from_bytes(chunk[0x54:0x56][::-1], 'big')
+        self.tx_rst = str(int.from_bytes(chunk[0x54:0x56][::-1], 'big'))
         # 受信RST: int型, 0x56-0x57
         # 上位は2バイト目のため反転処理
-        self.rx_rst = int.from_bytes(chunk[0x56:0x58][::-1], 'big')
+        self.rx_rst = str(int.from_bytes(chunk[0x56:0x58][::-1], 'big'))
         # モード int型, 0x5C
         self.mode_num = chunk[0x5C] \
                 if type(chunk[0x5C]) == int \
@@ -53,9 +53,9 @@ class ZlogData():
                 if type(chunk[0x9D]) == int \
                 else int.from_bytes(chunk[0x9D], 'big')
         # 得点 int型, 0x9F
-        self.point = chunk[0x9F] \
+        self.point = str(chunk[0x9F]) \
                 if type(chunk[0x9F]) == int \
-                else int.from_bytes(chunk[0x9F], 'big')
+                else str(int.from_bytes(chunk[0x9F], 'big'))
         # オペレータ char型, 0xA0-0xAE
         # chunk[0xA0]に文字数あり
         self.op_count = chunk[0xA0]
@@ -71,8 +71,9 @@ class ZlogData():
         # time_double(1899/1/1 00:00:00からの経過日数)を日付形式に変換
         ref_time = datetime.datetime(1899, 1, 1, 0, 0, 0, 000000)
         t = ref_time + datetime.timedelta(days = time_double)
-        return [t.year, t.month, t.day, \
-                t.hour, t.minute, t.second, t.microsecond]
+        return t
+        # return [t.year, t.month, t.day, \
+        #         t.hour, t.minute, t.second, t.microsecond]
 
     def mode(self):
         # モードは1バイトで表される
@@ -83,10 +84,9 @@ class ZlogData():
 
     def band(self):
         # バンドは1バイトで表される
-        band = ['1.9MHz', '3.5MHz', '7MHz', '10MHz', '14MHz', 
-                '18MHz', '21MHz', '24MHz', '28MHz', '50MHz', 
-                '144MHz', '430MHz', '1.2GHz', '2.4GHz', '5.6GHz', 
-                '10GHz以上']
+        band = ['1.9', '3.5', '7', '10', '14', '18', '21', '24',
+                '28', '50', '144', '430', '1.2G', '2.4G', '5.6', 
+                'over 10G']
         return band[self.band_num] \
                 if self.band_num < len(band) else 'Unknown'
 
@@ -115,8 +115,8 @@ class ZlogData():
     def data_all(self):
         return {
                 'time': self.time(), 
-                'cs_count': self.cs_count, 
-                'cs': self.cs, 
+                'callsign_count': self.callsign_count, 
+                'callsign': self.callsign, 
                 'tx_num_count': self.tx_num_count,
                 'tx_num': self.tx_num,
                 'rx_num_count': self.rx_num_count,
@@ -138,15 +138,32 @@ class ZlogData():
 def read_zlog(filename):
     filename = str(filename)
     zlogfile = open(filename, 'r+b')
+    data = []
     while True:
-        data = zlogfile.read(256)
-        if not data:
+        chunk = zlogfile.read(256)
+        if not chunk:
             break
         else:
-            chunk = ZlogData(data)
-        print(chunk.data_all())
+            data.append(ZlogData(chunk))
+            #print(data[-1].data_all())
+    return data
 
+def print_zlog(data):
+    header = ['DATE(JST)', 'TIME', 'BAND', 'MODE', 'CALLSIGN', 'SENTNo', '', 'RCVNo', '', 'Multi', 'PTS']
+    print('\t'.join(header))
+    for d in data:
+        text_content = [
+                '{0:%Y-%m-%d}'.format(d.time()),
+                '{0:%H:%M}'.format(d.time()),
+                d.band(), d.mode(), d.callsign, '',
+                d.tx_rst, d.tx_num,
+                d.rx_rst, d.rx_num,
+                d.multi if d.newmulti() == 'NEW' else '-',
+                d.point
+                ]
+        print('\t'.join(text_content))
 
 if __name__ == "__main__":
     filename = input("filename: ")
-    read_zlog(filename)
+    data = read_zlog(filename)
+    print_zlog(data)
